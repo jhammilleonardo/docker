@@ -1,0 +1,15 @@
+
+
+
+# esto es para ignorar el .dockerignore
+
+
+node_modules/
+
+
+dockerfile
+
+.git
+.dockerignore
+.gitignore
+README.md 

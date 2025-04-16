@@ -1,0 +1,80 @@
+# #  FROM --platform=linux/amd64 node:19.2-alpine3.16
+# #  FROM node:19.2-alpine3.16
+# #  FROM --platform=$BUILDPLATFORM node:19.2-alpine3.16
+#  FROM node:19.2-alpine3.16
+#  #/app /usr / lib  ya viene incluida ahi
+
+#  #es como hace un cd a la carpeta app
+#  WORKDIR /app
+
+#  # es destino ya seria dentro de mi /app 
+
+# #  COPY app.js package.json ./
+#  COPY . .
+
+# #  COPY . . #ESTO QUIERO DECIR QUE VA A COPEAR TODAS LAS CARPETAS EN EL WORKDIR
+
+
+#  #instalar las dependencias
+#  RUN npm install
+
+# # realizar testing
+#  RUN npm run test
+
+# #  eliminar archivos y directorios no necesarios en produccion 
+# #  -rf borra todo detro de directorios es recursivo
+
+# # RUN rm -rf tests && -rf node_modules   #tabine se puede hacer asi
+# RUN rm -rf tests 
+# RUN rm -rf node_modules
+
+# # para que solo instale las dependencias de produccion 
+# RUN npm install --prod
+# #comando que se tiene que ejecutar en la terminal
+#  CMD [ "node","app.js" ]
+
+
+
+
+
+
+
+
+
+
+
+
+# -------------------------------------------------------
+
+    #dependecias de desarrollo 
+    FROM node:19.2-alpine3.16 AS dependenciass
+    WORKDIR /app
+    COPY . .
+    RUN npm install
+
+    #build y tests
+    FROM node:19.2-alpine3.16 AS builder 
+    WORKDIR /app
+    # es igual a testear
+    COPY --from=dependenciass /app/node_modules ./node_modules
+    COPY . .
+    RUN npm run test
+
+    #dependencias de produccion
+    FROM node:19.2-alpine3.16 AS producto-dependencias
+    WORKDIR /app
+    COPY package.json ./
+    RUN npm install --prod
+
+
+    #ejecutar la app 
+    FROM node:19.2-alpine3.16 AS runner
+    WORKDIR /app
+    COPY --from=producto-dependencias /app/node_modules ./node_modules
+    COPY app.js ./
+    COPY task/ ./task 
+    CMD [ "node", "app.js" ]
+
+
+    
+
